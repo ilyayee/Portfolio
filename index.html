@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTIST NAME | Masonry Portfolio</title>
+    
+    <!-- 引入 Masonry 和 ImagesLoaded 库 -->
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+
+    <style>
+        /* --- 1. 全局变量 (颜色已调亮) --- */
+        :root {
+            --bg-color: #000000;
+            /* 字体颜色变得更亮 */
+            --text-color: #f2f2f2; 
+            --accent-color: #aaaaaa; 
+            --gap-size: 20px; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        a { color: var(--text-color); text-decoration: none; transition: 0.3s; }
+        a:hover { color: #fff; text-decoration: underline; }
+
+        .container {
+            max-width: 98%; 
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- 头部 --- */
+        header {
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 20px;
+        }
+
+        .brand h1 { font-size: 20px; font-weight: normal; letter-spacing: 1px; color: #fff; }
+        .brand p { color: var(--accent-color); font-size: 12px; margin-top: 5px; }
+        nav ul { list-style: none; display: flex; gap: 30px; }
+
+        /* --- 2. 瀑布流容器 --- */
+        .gallery {
+            display: block; 
+            width: 100%;
+            margin: 0 calc(var(--gap-size) * -0.5);
+        }
+
+        .grid-sizer { width: 1%; }
+
+        .artwork-item {
+            float: left; 
+            position: relative;
+            background: transparent;
+            padding: calc(var(--gap-size) * 0.5);
+            cursor: pointer;
+            min-height: 1px; 
+        }
+
+        /* 宽度控制 */
+        .w-16  { width: 16.6%; }
+        .w-20  { width: 20%; }
+        .w-25  { width: 25%; }
+        .w-30  { width: 30%; }
+        .w-33  { width: 33.333%; }
+        .w-40  { width: 40%; }
+        .w-50  { width: 50%; }
+        .w-60  { width: 60%; }
+        .w-66  { width: 66.666%; }
+        .w-75  { width: 75%; }
+        .w-100 { width: 100%; }
+
+        .media-wrapper {
+            position: relative;
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+            background: #050505;
+            display: block; 
+        }
+
+        .static-thumb {
+            display: block;
+            width: 100%;
+            height: auto; 
+            object-fit: contain; 
+            z-index: 2;
+            transition: opacity 0.4s ease;
+        }
+
+        .media-wrapper video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .artwork-item:hover .static-thumb { opacity: 0; }
+        .artwork-item:hover { z-index: 10; }
+
+        /* --- 修改后的 Meta 样式 --- */
+        .meta {
+            padding-top: 8px;
+            /* 字体缩小 */
+            font-size: 10px; 
+            color: var(--accent-color);
+            display: flex;
+            /* 只剩左侧文字，无需 space-between */
+            justify-content: flex-start; 
+        }
+
+        /* --- 新增：底部 Credit 列表样式 --- */
+        .credits-list {
+            margin-top: 100px; /* 与图片拉开距离 */
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            text-align: right; /* 向右对齐 */
+        }
+        
+        .credits-list h3 {
+            font-size: 11px;
+            margin-bottom: 20px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .credit-item {
+            font-size: 11px;
+            color: var(--accent-color);
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+        
+
+        /* 弹窗样式 */
+        .modal {
+            display: none; position: fixed; z-index: 9999;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            opacity: 0; transition: opacity 0.3s ease;
+            justify-content: center; align-items: center;
+        }
+        .modal.show { opacity: 1; }
+        .modal-content {
+            width: 90%; max-width: 1600px; max-height: 90vh;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content video {
+            width: 100%; height: auto; max-height: 90vh;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); outline: none;
+        }
+        .close-btn {
+            position: absolute; top: 30px; right: 40px; color: #fff;
+            font-size: 40px; cursor: pointer; z-index: 10000;
+        }
+
+        @media (max-width: 768px) {
+            .w-25, .w-33, .w-40, .w-50, .w-60, .w-66, .w-75, .w-100 { 
+                width: 100% !important; 
+            }
+            .gallery { margin: 0; }
+            .artwork-item { padding: 0 0 20px 0; }
+            header { flex-direction: column; gap: 15px; }
+            .credits-list { text-align: left; } /* 手机端左对齐更易读 */
+        }
+
+        footer {
+            margin-top: 40px; font-size: 11px; color: #555;
+            text-align: right; padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="brand">
+                <h1>YEE HE</h1>
+                <p>Multidisciplinary Creator / Audiovisual Art</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="mailto:yee.hy@outlook.com">Email</a></li>
+                    <li><a href="https://www.xiaohongshu.com/user/profile/55bd6bbdb7ba22578075c53b?xsec_token=ABxqPejoBvZKfZa8izaP1p5LS2RoqjDWN07OjlFP4VmKU%3D&xsec_source=pc_search" target="_blank">Xiaohongshu</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- 画廊容器 -->
+        <main class="gallery">
+            <div class="grid-sizer"></div>
+
+            <!-- 
+               注意：这里的 .meta 只保留了左侧标题 
+               右侧 Credit 已全部移动到页面底部的 .credits-list 区域
+            -->
+
+            <!-- 1. 50% -->
+            <article class="artwork-item w-50" data-full-src="https://www.youtube.com/shorts/ggGUPrxSyQ8">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/001.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/001-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>莲，或者身体｜LOTUS OR BODY</span></div>
+            </article>
+
+            <!-- 2. 25% -->
+            <article class="artwork-item w-25" data-full-src="https://www.youtube.com/watch?v=8o-pZK-ZOy8">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/006.jpg" alt="S">
+                    <video loop muted playsinline preload="none"><source src="video-loop/006-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>跳舞吧 朋友们！|DANCE AND DANCE!</span></div>
+            </article>
+
+            <!-- 3. 25% -->
+            <article class="artwork-item w-25" data-full-src="个人网站/004.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/004.jpg" alt="S">
+                    <video loop muted playsinline preload="none"><source src="video-loop/004-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>行星｜SATELLITE</span></div>
+            </article>
+
+            <!-- 4. 25% -->
+            <article class="artwork-item w-25" data-full-src="https://www.youtube.com/shorts/Zow17n0Ix4w">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/008.jpg" alt="S">
+                    <video loop muted playsinline preload="none"><source src="video-loop/008-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>在宇宙无所事事地游荡|WANDER ABOUT</span></div>
+            </article>
+
+            <!-- 5. 25% -->
+            <article class="artwork-item w-25" data-full-src="https://www.youtube.com/shorts/G6QS37nleHM">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/005.jpg" alt="S">
+                    <video loop muted playsinline preload="none"><source src="video-loop/005-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>银河项链|GALAXY NECKLACE</span></div>
+            </article>
+
+            <!-- 6. 50% -->
+            <article class="artwork-item w-50" data-full-src="https://www.youtube.com/watch?v=HxMMbeogOn4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/003.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/003-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>一棵树的低语|THE WHISPER OF A TREE</span></div>
+            </article>
+
+          
+            <!-- 7. 50% -->
+            <article class="artwork-item w-50" data-full-src="https://www.youtube.com/watch?v=7hEYTc1h8PQ">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/022.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/022-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>抖音汽水音乐节|VJ PROJECT FOR YULAN</span></div>
+            </article>
+
+            <!-- 8. 50% -->
+            <article class="artwork-item w-50" data-full-src="https://www.youtube.com/watch?v=9Ob4E1fZPDs">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/014.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/014-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>抖音汽水音乐节|VJ PROJECT FOR YULAN</span></div>
+            </article>
+
+            
+           <!-- 007-->
+            <article class="artwork-item w-25" data-full-src="https://www.youtube.com/shorts/5-GJLUORdoA">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/007.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/007-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>月亮照常升起|MOONRISE</span></div>
+            </article>
+
+            <!-- 10. 25% -->
+            <article class="artwork-item w-25" data-full-src="https://www.youtube.com/shorts/Hsqk-mDJWRA">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/002.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/002-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>烟火｜FIREWORK</span></div>
+            </article>
+
+            <!-- 11. 50% -->
+            <article class="artwork-item w-50" data-full-src="https://www.youtube.com/watch?v=_uPN1C3lM0k">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/023.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/023-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>抖音汽水音乐节|VJ PROJECT FOR YULAN</span></div>
+            </article>
+           
+            <!-- 12. 100% -->
+            <article class="artwork-item w-100" data-full-src="https://www.youtube.com/watch?v=GdDJF9g1y0o">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/015.jpg" alt="Wide">
+                    <video loop muted playsinline preload="none"><source src="video-loop/015-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>抖音汽水音乐节|VJ PROJECT FOR YULAN</span></div>
+            </article>
+
+
+            <!-- 19 -->
+            <article class="artwork-item w-20" data-full-src="个人网站/020.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/020.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/020-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>我们只想开出一朵花|FLOWER KNOWS_01</span></div>
+            </article>
+
+            <!-- 21. 20% -->
+            <article class="artwork-item w-20" data-full-src="个人网站/019.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/019.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/019-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>02</span></div>
+            </article>
+
+           <!-- 18. 16% -->
+            <article class="artwork-item w-20" data-full-src="个人网站/016.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/016.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/016-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>03</span></div>
+            </article>
+   
+           
+            <!-- 20. 20% -->
+            <article class="artwork-item w-20" data-full-src="个人网站/021.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/021.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/021-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>04</span></div>
+            </article>
+
+          
+
+            <!-- 22. 20% -->
+            <article class="artwork-item w-20" data-full-src="个人网站/017.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/017.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/017-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>05</span></div>
+            </article>
+
+            <!-- 13-->
+            <article class="artwork-item w-40" data-full-src="https://www.youtube.com/shorts/k0UEUI1nb4k">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/011.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/011-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>盛开|BLOSSOM</span></div>
+            </article>
+
+            <!-- 24-->
+            <article class="artwork-item w-40" data-full-src="https://www.youtube.com/watch?v=IDnQc-1br5g">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/025.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/025-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>泥火山之歌|SONG OF VOLCANO</span></div>
+            </article>
+
+
+           
+            
+            <!-- 010-->
+            <article class="artwork-item w-20" data-full-src="https://www.youtube.com/shorts/FfkzgqnaWfE">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/010.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/010-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>无题｜UNTITLED</span></div>
+            </article>
+
+
+            <!-- 012 -->
+            <article class="artwork-item w-20" data-full-src="个人网站/012.mp4">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/012.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/012-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>故障|GLITCH</span></div>
+            </article>
+      
+            <!-- 009 -->
+            <article class="artwork-item w-20" data-full-src="https://www.youtube.com/shorts/B29zp-D9yjY">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/009.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/009-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>无题｜UNTITLED</span></div>
+            </article>
+
+            <!-- 013-->
+            <article class="artwork-item w-20" data-full-src="https://www.youtube.com/shorts/-CcXOx5MOrk">
+                <div class="media-wrapper">
+                    <img class="static-thumb" src="images/013.jpg" alt="V">
+                    <video loop muted playsinline preload="none"><source src="video-loop/013-loop.mp4"></video>
+                </div>
+                <div class="meta"><span>隧道|TUNNEL</span></div>
+            </article>
+
+
+
+        </main>
+
+        <!-- 
+            ★★★ 新增部分：底部 Credit 列表 ★★★ 
+            所有右侧文字聚集于此，向右对齐
+        -->
+        <section class="credits-list">
+            <h3>AUDIO CREDITS</h3>
+            <div class="credit-item">"abans abans" - Marina Herlop</div>
+            <div class="credit-item">"Another Day of Sun" - "La La Land" Soundtrack</div>
+            <div class="credit-item">"Satellite" - 落日飞车</div>
+            <div class="credit-item">"raingurl" - Yaeji</div>
+            <div class="credit-item">"as time flies" - Ty's Music</div>
+            <div class="credit-item">"I'm a song that you never learned to sing" - Yulan</div>
+            <div class="credit-item">"Wait I think I" - Yulan</div>
+            <div class="credit-item">"Rock Bottom Griever" - Yulan</div>
+            <div class="credit-item">"My own mind" - Yulan</div>
+            <div class="credit-item">"Bus II" - Marina Herlop</div>
+            <div class="credit-item">"Two Different Worlds" - Koruse/mzmff</div>
+            <div class="credit-item">"Clair de Lune" - Claude Debussy</div>
+        </section>
+
+        <footer>
+            © 2025 YEE HE. ALL RIGHTS RESERVED.
+        </footer>
+    </div>
+
+    <!-- 灯箱弹窗 -->
+    <div id="video-modal" class="modal">
+        <span class="close-btn">&times;</span>
+        <div class="modal-content">
+            <video id="modal-video" controls playsinline>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var grid = document.querySelector('.gallery');
+            imagesLoaded( grid, function() {
+                var msnry = new Masonry( grid, {
+                    itemSelector: '.artwork-item',
+                    columnWidth: '.grid-sizer',
+                    percentPosition: true
+                });
+            });
+
+            const items = document.querySelectorAll('.artwork-item');
+            const modal = document.getElementById('video-modal');
+            const modalVideo = document.getElementById('modal-video');
+            const closeBtn = document.querySelector('.close-btn');
+
+            items.forEach(item => {
+                const previewVideo = item.querySelector('video');
+                item.addEventListener('mouseenter', () => { if (previewVideo) previewVideo.play().catch(e => {}); });
+                item.addEventListener('mouseleave', () => { if (previewVideo) { previewVideo.pause(); previewVideo.currentTime = 0; } });
+                item.addEventListener('click', () => {
+                    const fullSrc = item.getAttribute('data-full-src');
+                    if (fullSrc) {
+                        modalVideo.src = fullSrc;
+                        modal.style.display = 'flex';
+                        setTimeout(() => { modal.classList.add('show'); }, 10);
+                        modalVideo.load();
+                        modalVideo.play();
+                        items.forEach(i => { const v = i.querySelector('video'); if(v) v.pause(); });
+                    }
+                });
+            });
+
+            const closeModal = () => {
+                modal.classList.remove('show');
+                setTimeout(() => { modal.style.display = 'none'; modalVideo.pause(); modalVideo.src = ""; }, 300);
+            };
+
+            closeBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal || e.target === document.querySelector('.modal-content')) closeModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === "Escape" && modal.classList.contains('show')) closeModal(); });
+        });
+    </script>
+</body>
+</html>
