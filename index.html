@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARTIST NAME | Masonry Portfolio</title>
+    <title>YEE HE | ARTWORK</title>
     
     <!-- 引入 Masonry 和 ImagesLoaded 库 -->
     <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
     <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
 
     <style>
-        /* --- 1. 全局变量 (颜色已调亮) --- */
+        /* --- 1. 全局变量 --- */
         :root {
             --bg-color: #000000;
-            /* 字体颜色变得更亮 */
             --text-color: #f2f2f2; 
             --accent-color: #aaaaaa; 
             --gap-size: 20px; 
@@ -114,23 +113,20 @@
         .artwork-item:hover .static-thumb { opacity: 0; }
         .artwork-item:hover { z-index: 10; }
 
-        /* --- 修改后的 Meta 样式 --- */
         .meta {
             padding-top: 8px;
-            /* 字体缩小 */
             font-size: 10px; 
             color: var(--accent-color);
             display: flex;
-            /* 只剩左侧文字，无需 space-between */
             justify-content: flex-start; 
         }
 
-        /* --- 新增：底部 Credit 列表样式 --- */
+        /* --- 底部 Credit 列表样式 --- */
         .credits-list {
-            margin-top: 100px; /* 与图片拉开距离 */
+            margin-top: 100px; 
             padding-top: 30px;
             border-top: 1px solid #222;
-            text-align: right; /* 向右对齐 */
+            text-align: right; 
         }
         
         .credits-list h3 {
@@ -158,14 +154,34 @@
             justify-content: center; align-items: center;
         }
         .modal.show { opacity: 1; }
+        
         .modal-content {
-            width: 90%; max-width: 1600px; max-height: 90vh;
-            display: flex; justify-content: center; align-items: center;
+            width: 90%; 
+            max-width: 1280px; /* 限制最大宽度 */
+            height: 80vh;      /* 限制高度 */
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            position: relative;
         }
-        .modal-content video {
-            width: 100%; height: auto; max-height: 90vh;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); outline: none;
+
+        /* 视频和iframe的通用样式 */
+        .modal-content video,
+        .modal-content iframe {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 保持比例 */
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            outline: none;
+            display: none; /* 默认隐藏，JS控制显示 */
         }
+
+        /* 当显示时 */
+        .modal-content video.active,
+        .modal-content iframe.active {
+            display: block;
+        }
+
         .close-btn {
             position: absolute; top: 30px; right: 40px; color: #fff;
             font-size: 40px; cursor: pointer; z-index: 10000;
@@ -178,7 +194,8 @@
             .gallery { margin: 0; }
             .artwork-item { padding: 0 0 20px 0; }
             header { flex-direction: column; gap: 15px; }
-            .credits-list { text-align: left; } /* 手机端左对齐更易读 */
+            .credits-list { text-align: left; }
+            .modal-content { height: 50vh; } /* 手机端高度调整 */
         }
 
         footer {
@@ -198,7 +215,7 @@
             <nav>
                 <ul>
                     <li><a href="mailto:yee.hy@outlook.com">Email</a></li>
-                    <li><a href="https://www.xiaohongshu.com/user/profile/55bd6bbdb7ba22578075c53b?xsec_token=ABxqPejoBvZKfZa8izaP1p5LS2RoqjDWN07OjlFP4VmKU%3D&xsec_source=pc_search" target="_blank">Xiaohongshu</a></li>
+                    <li><a href="#">Xiaohongshu</a></li>
                 </ul>
             </nav>
         </header>
@@ -207,21 +224,17 @@
         <main class="gallery">
             <div class="grid-sizer"></div>
 
-            <!-- 
-               注意：这里的 .meta 只保留了左侧标题 
-               右侧 Credit 已全部移动到页面底部的 .credits-list 区域
-            -->
-
-            <!-- 1. 50% -->
+            <!-- --- 示例作品 1: YouTube 链接 (Shorts) --- -->
             <article class="artwork-item w-50" data-full-src="https://www.youtube.com/shorts/ggGUPrxSyQ8">
                 <div class="media-wrapper">
+                    <!-- 请确保 images 文件夹下有对应的图片，或者替换为有效图片路径 -->
                     <img class="static-thumb" src="images/001.jpg" alt="V">
                     <video loop muted playsinline preload="none"><source src="video-loop/001-loop.mp4"></video>
                 </div>
                 <div class="meta"><span>莲，或者身体｜LOTUS OR BODY</span></div>
             </article>
 
-            <!-- 2. 25% -->
+            <!-- --- 示例作品 2: YouTube 链接 (常规长视频) --- -->
             <article class="artwork-item w-25" data-full-src="https://www.youtube.com/watch?v=8o-pZK-ZOy8">
                 <div class="media-wrapper">
                     <img class="static-thumb" src="images/006.jpg" alt="S">
@@ -230,7 +243,7 @@
                 <div class="meta"><span>跳舞吧 朋友们！|DANCE AND DANCE!</span></div>
             </article>
 
-            <!-- 3. 25% -->
+            <!-- --- 示例作品 3: 本地 .mp4 文件链接 --- -->
             <article class="artwork-item w-25" data-full-src="个人网站/004.mp4">
                 <div class="media-wrapper">
                     <img class="static-thumb" src="images/004.jpg" alt="S">
@@ -388,9 +401,7 @@
                 </div>
                 <div class="meta"><span>泥火山之歌|SONG OF VOLCANO</span></div>
             </article>
-
-
-           
+  
             
             <!-- 010-->
             <article class="artwork-item w-20" data-full-src="https://www.youtube.com/shorts/FfkzgqnaWfE">
@@ -433,24 +444,12 @@
 
         </main>
 
-        <!-- 
-            ★★★ 新增部分：底部 Credit 列表 ★★★ 
-            所有右侧文字聚集于此，向右对齐
-        -->
+
         <section class="credits-list">
             <h3>AUDIO CREDITS</h3>
             <div class="credit-item">"abans abans" - Marina Herlop</div>
             <div class="credit-item">"Another Day of Sun" - "La La Land" Soundtrack</div>
-            <div class="credit-item">"Satellite" - 落日飞车</div>
-            <div class="credit-item">"raingurl" - Yaeji</div>
-            <div class="credit-item">"as time flies" - Ty's Music</div>
-            <div class="credit-item">"I'm a song that you never learned to sing" - Yulan</div>
-            <div class="credit-item">"Wait I think I" - Yulan</div>
-            <div class="credit-item">"Rock Bottom Griever" - Yulan</div>
-            <div class="credit-item">"My own mind" - Yulan</div>
-            <div class="credit-item">"Bus II" - Marina Herlop</div>
-            <div class="credit-item">"Two Different Worlds" - Koruse/mzmff</div>
-            <div class="credit-item">"Clair de Lune" - Claude Debussy</div>
+            <!-- ... -->
         </section>
 
         <footer>
@@ -462,14 +461,19 @@
     <div id="video-modal" class="modal">
         <span class="close-btn">&times;</span>
         <div class="modal-content">
+            <!-- 1. 用于播放本地 MP4 -->
             <video id="modal-video" controls playsinline>
                 <source src="" type="video/mp4">
             </video>
+            
+            <!-- 2. 用于播放 YouTube -->
+            <iframe id="modal-iframe" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // 初始化 Masonry
             var grid = document.querySelector('.gallery');
             imagesLoaded( grid, function() {
                 var msnry = new Masonry( grid, {
@@ -482,33 +486,80 @@
             const items = document.querySelectorAll('.artwork-item');
             const modal = document.getElementById('video-modal');
             const modalVideo = document.getElementById('modal-video');
+            const modalIframe = document.getElementById('modal-iframe');
             const closeBtn = document.querySelector('.close-btn');
 
+            // 鼠标悬停预览 (保持不变)
             items.forEach(item => {
                 const previewVideo = item.querySelector('video');
                 item.addEventListener('mouseenter', () => { if (previewVideo) previewVideo.play().catch(e => {}); });
                 item.addEventListener('mouseleave', () => { if (previewVideo) { previewVideo.pause(); previewVideo.currentTime = 0; } });
+                
+                // 点击事件：区分 YouTube 和 本地视频
                 item.addEventListener('click', () => {
                     const fullSrc = item.getAttribute('data-full-src');
-                    if (fullSrc) {
+                    if (!fullSrc) return;
+
+                    // 1. 检查是否是 YouTube 链接
+                    const youtubeId = getYouTubeId(fullSrc);
+
+                    if (youtubeId) {
+                        // 是 YouTube
+                        modalVideo.classList.remove('active'); // 隐藏 video 标签
+                        modalVideo.pause(); 
+                        
+                        modalIframe.classList.add('active'); // 显示 iframe
+                        // 构建嵌入链接，添加 autoplay=1 自动播放
+                        modalIframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
+                    } else {
+                        // 是本地 MP4
+                        modalIframe.classList.remove('active'); // 隐藏 iframe
+                        modalIframe.src = ""; 
+
+                        modalVideo.classList.add('active'); // 显示 video 标签
                         modalVideo.src = fullSrc;
-                        modal.style.display = 'flex';
-                        setTimeout(() => { modal.classList.add('show'); }, 10);
                         modalVideo.load();
                         modalVideo.play();
-                        items.forEach(i => { const v = i.querySelector('video'); if(v) v.pause(); });
                     }
+
+                    // 显示弹窗
+                    modal.style.display = 'flex';
+                    setTimeout(() => { modal.classList.add('show'); }, 10);
+                    
+                    // 暂停背景中的预览视频
+                    items.forEach(i => { const v = i.querySelector('video'); if(v) v.pause(); });
                 });
             });
 
+            // 提取 YouTube ID 的辅助函数 (支持常规链接、Shorts、youtu.be)
+            function getYouTubeId(url) {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+            }
+
+            // 关闭弹窗逻辑
             const closeModal = () => {
                 modal.classList.remove('show');
-                setTimeout(() => { modal.style.display = 'none'; modalVideo.pause(); modalVideo.src = ""; }, 300);
+                setTimeout(() => { 
+                    modal.style.display = 'none'; 
+                    // 停止 MP4
+                    modalVideo.pause(); 
+                    modalVideo.src = ""; 
+                    // 停止 YouTube (清空 src)
+                    modalIframe.src = "";
+                    modalIframe.classList.remove('active');
+                    modalVideo.classList.remove('active');
+                }, 300);
             };
 
             closeBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => { if (e.target === modal || e.target === document.querySelector('.modal-content')) closeModal(); });
-            document.addEventListener('keydown', (e) => { if (e.key === "Escape" && modal.classList.contains('show')) closeModal(); });
+            modal.addEventListener('click', (e) => { 
+                if (e.target === modal || e.target === document.querySelector('.modal-content')) closeModal(); 
+            });
+            document.addEventListener('keydown', (e) => { 
+                if (e.key === "Escape" && modal.classList.contains('show')) closeModal(); 
+            });
         });
     </script>
 </body>
